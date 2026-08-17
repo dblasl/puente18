@@ -13,7 +13,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
-st.set_page_config(page_title="PUENTE 18+", page_icon="🌉", layout="wide")
+st.set_page_config(page_title="PUENTE 18 - Ruta Segura", page_icon=None, layout="wide")
 
 # ---------------------------
 # Visual theme
@@ -44,23 +44,52 @@ DATA = BASE / "data"
 def load_demo_data():
     p = pd.read_csv(DATA / "pacientes_sinteticos.csv")
     f = pd.read_csv(DATA / "establecimientos_capacidad.csv")
+    rng = np.random.default_rng(1808)
+
+    # Compatibilidad con el dataset original: estos indicadores son sintéticos
+    # y se usan solo para demostrar los nuevos módulos de la hackathon.
+    if "district" not in f.columns:
+        districts={
+            "Lima Centro":["Cercado de Lima","Breña","La Victoria"],
+            "Lima Sur":["San Juan de Miraflores","Villa El Salvador","Chorrillos"],
+            "Lima Norte":["Los Olivos","Independencia","Comas"],
+            "Lima Este":["Ate","Santa Anita","San Juan de Lurigancho"],
+            "Callao":["Callao","Bellavista","La Perla"]}
+        f["district"]=[districts.get(d,["No especificado"])[i % len(districts.get(d,["No especificado"]))] for i,d in enumerate(f["diris"])]
+    if "knowledge_disease_score" not in p.columns:
+        p["knowledge_disease_score"]=np.clip(np.round(p["readiness_score"]*.75+p["independence_score"]*.15+rng.normal(0,8,len(p))),0,100).astype(int)
+    if "treatment_knowledge_score" not in p.columns:
+        p["treatment_knowledge_score"]=np.clip(np.round(p["independence_score"]*.65+p["readiness_score"]*.20+rng.normal(0,9,len(p))),0,100).astype(int)
+    if "appointment_management_score" not in p.columns:
+        p["appointment_management_score"]=np.where(p["appointment_confirmed"].eq("Sí"),np.clip(rng.normal(86,7,len(p)),60,100),np.clip(rng.normal(42,12,len(p)),10,75)).round().astype(int)
+    if "communication_with_doctor_score" not in p.columns:
+        p["communication_with_doctor_score"]=np.clip(np.round(p["caregiver_support"]*.55+p["independence_score"]*.25+rng.normal(0,9,len(p))),0,100).astype(int)
+    criteria=["knowledge_disease_score","treatment_knowledge_score","appointment_management_score","communication_with_doctor_score"]
+    p["readiness_score"]=p[criteria].mean(axis=1).round().astype(int)
+    p["preparation_level"]=np.select([p["readiness_score"]>=80,p["readiness_score"]<50],["Preparado","En riesgo"],default="En desarrollo")
+    if "first_adult_appointment_done" not in p.columns:
+        p["first_adult_appointment_done"]=np.where((p["appointment_confirmed"]=="Sí")&(p["adult_receiver_identified"]=="Sí")&(p["referral_sent"]=="Sí"),"Sí","No")
+    if "treatment_interruptions_12m" not in p.columns:
+        p["treatment_interruptions_12m"]=np.clip(np.round((100-p["readiness_score"])/35+p["no_shows_last_12m"]*.35+rng.normal(0,.5,len(p))),0,5).astype(int)
+    if "treatment_delay_days" not in p.columns:
+        p["treatment_delay_days"]=np.clip(np.round((100-p["readiness_score"])*.18+p["treatment_interruptions_12m"]*4+rng.normal(0,3,len(p))),0,60).astype(int)
     return p, f
 
 def risk_badge(level):
     if level == "Alto":
-        return '<span class="badge badge-red">🔴 Alto</span>'
+        return '<span class="badge badge-red">● Alto</span>'
     if level == "Moderado":
-        return '<span class="badge badge-amber">🟡 Moderado</span>'
-    return '<span class="badge badge-green">🟢 Bajo</span>'
+        return '<span class="badge badge-amber">● Moderado</span>'
+    return '<span class="badge badge-green">● Bajo</span>'
 
 def status_badge(status):
     if status == "Disponible":
-        return '<span class="badge badge-green">🟢 Disponible</span>'
+        return '<span class="badge badge-green">● Disponible</span>'
     if status == "Capacidad limitada":
-        return '<span class="badge badge-amber">🟡 Limitada</span>'
+        return '<span class="badge badge-amber">● Limitada</span>'
     if status == "Sin capacidad reportada":
-        return '<span class="badge badge-red">🔴 Sin capacidad</span>'
-    return '<span class="badge badge-gray">⚪ Desactualizado</span>'
+        return '<span class="badge badge-red">● Sin capacidad</span>'
+    return '<span class="badge badge-gray">● Desactualizado</span>'
 
 def calculate_rule_score(row):
     score = 0
@@ -163,43 +192,45 @@ facilities = st.session_state.facilities
 # Sidebar / role
 # ---------------------------
 with st.sidebar:
-    st.markdown("## 🌉 PUENTE 18+")
-    st.caption("Prototipo de coordinación de transición pediátrico-adulta")
+    st.markdown("## PUENTE 18 - Ruta Segura")
+    st.caption("Ruta segura de preparación, transferencia y seguimiento pediátrico-adulto")
     role = st.selectbox("Tipo de usuario", [
         "Médico/a", "Enfermería", "Coordinación de transición", "DIRIS / DIRESA", "Tutor / joven"
     ])
     st.divider()
     page = st.radio("Módulo", [
         "Dashboard",
-        "Ficha de transición",
-        "Buscar derivación",
+        "Módulo 1: Preparación (16-18)",
+        "Módulo 2: Transferencia (18+)",
+        "Buscar establecimientos",
         "Capacidad de red",
         "Autoaprendizaje",
+        "Módulo 3: Seguimiento (18-20)",
         "Modelo predictivo",
         "Carga de datos"
     ])
     st.divider()
-    st.caption("🧪 DEMO — datos 100% sintéticos")
+    st.caption("DEMO — datos 100% sintéticos")
     st.caption("No usar historias clínicas reales.")
 
 # ---------------------------
 # Dashboard
 # ---------------------------
 if page == "Dashboard":
-    st.title("Centro de Gestión de Transición")
+    st.title("Centro de Gestión de Transferencia")
     st.caption(f"Vista: {role} · Última actualización demo: 15/08/2026 09:30")
     c1,c2,c3,c4,c5 = st.columns(5)
-    with c1: render_kpi("Pacientes en transición", len(patients), "base demo", "#4F46E5")
+    with c1: render_kpi("Pacientes en la ruta", len(patients), "base demo", "#4F46E5")
     with c2: render_kpi("Próximos a 18 años", int((patients["months_to_18"]<=3).sum()), "≤ 3 meses", "#F59E0B")
     with c3: render_kpi("Alta complejidad", int((patients["complexity"]=="Alta").sum()), "seguimiento continuo", "#DC2626")
     with c4: render_kpi("Sin receptor", int((patients["adult_receiver_identified"]=="No").sum()), "requieren gestión", "#DC2626")
     with c5: render_kpi("Sin cita", int((patients["appointment_confirmed"]=="No").sum()), "pendientes", "#F59E0B")
 
-    st.markdown("### Estado de la transición")
+    st.markdown("### Estado del proceso de transferencia")
     left, mid, right = st.columns([1.1,1.2,1.2])
     with left:
         lvl = patients["rule_level_live"].value_counts().reindex(["Bajo","Moderado","Alto"]).fillna(0)
-        fig = px.pie(values=lvl.values, names=["🟢 Bajo","🟡 Moderado","🔴 Alto"], hole=.62)
+        fig = px.pie(values=lvl.values, names=["Bajo","Moderado","Alto"], hole=.62)
         fig.update_layout(height=290, margin=dict(l=0,r=0,t=10,b=0), legend=dict(orientation="h",y=-.05))
         st.plotly_chart(fig, use_container_width=True)
     with mid:
@@ -214,10 +245,10 @@ if page == "Dashboard":
     with right:
         st.markdown('<div class="section-title">Alertas recientes</div>', unsafe_allow_html=True)
         alerts = [
-            ("🔴", "Pacientes próximos a 18 años", f"{int((patients['months_to_18']<=2).sum())} requieren revisión"),
-            ("🟡", "Sin cita confirmada", f"{int((patients['appointment_confirmed']=='No').sum())} pendientes"),
-            ("🔴", "Sin receptor adulto", f"{int((patients['adult_receiver_identified']=='No').sum())} casos"),
-            ("⚪", "Capacidad desactualizada", "1 registro supera 48 h")
+            ("<span style='color:#DC2626'>●</span>", "Pacientes próximos a 18 años", f"{int((patients['months_to_18']<=2).sum())} requieren revisión"),
+            ("<span style='color:#F59E0B'>●</span>", "Sin cita confirmada", f"{int((patients['appointment_confirmed']=='No').sum())} pendientes"),
+            ("<span style='color:#DC2626'>●</span>", "Sin receptor adulto", f"{int((patients['adult_receiver_identified']=='No').sum())} casos"),
+            ("<span style='color:#94A3B8'>●</span>", "Capacidad desactualizada", "1 registro supera 48 h")
         ]
         for icon, title, txt in alerts:
             st.markdown(f"**{icon} {title}**<br><span class='small-muted'>{txt}</span>", unsafe_allow_html=True)
@@ -234,9 +265,71 @@ if page == "Dashboard":
 # ---------------------------
 # Transition profile
 # ---------------------------
-elif page == "Ficha de transición":
-    st.title("Ficha de transición 360°")
-    st.caption("La ficha está diseñada para coordinar la transición, no para reemplazar la historia clínica electrónica.")
+elif page == "Módulo 1: Preparación (16-18)":
+    st.title("Módulo 1: Preparación del paciente")
+    st.caption("Preparación progresiva del adolescente de 16 a 18 años mediante sesiones de asesoramiento con enfermería.")
+
+    m1 = patients[patients["age_years"].between(16, 18)].copy()
+    criteria = {
+        "Conocimiento de la enfermedad": "knowledge_disease_score",
+        "Manejo del tratamiento": "treatment_knowledge_score",
+        "Gestión de citas": "appointment_management_score",
+        "Comunicación con el médico": "communication_with_doctor_score",
+    }
+    selected = st.selectbox("Paciente", m1["patient_id"].tolist(), key="m1_patient")
+    row = m1.loc[m1["patient_id"] == selected].iloc[0]
+
+    c1,c2,c3 = st.columns(3)
+    with c1: render_kpi("Preparado", int((m1["readiness_score"]>=80).sum()), "≥ 80%", "#16A34A")
+    with c2: render_kpi("En desarrollo", int(m1["readiness_score"].between(50,79).sum()), "50-79%", "#F59E0B")
+    with c3: render_kpi("En riesgo", int((m1["readiness_score"]<50).sum()), "< 50%", "#DC2626")
+
+    st.markdown("### Evaluación de preparación")
+    cols=st.columns(4)
+    for col,(label,field) in zip(cols,criteria.items()):
+        with col: render_kpi(label, f"{int(row[field])}%", "indicador sintético", "#4F46E5")
+
+    total=int(row["readiness_score"])
+    level="Preparado" if total>=80 else ("En desarrollo" if total>=50 else "En riesgo")
+    level_color={"Preparado":"#16A34A","En desarrollo":"#F59E0B","En riesgo":"#DC2626"}[level]
+    st.markdown(f'<div class="patient-card"><b>Índice global de preparación: {total}%</b><br><span style="color:{level_color};font-weight:750">● {level}</span><br><span class="small-muted">Los puntos de corte del prototipo son: ≥80% preparado, 50-79% en desarrollo y &lt;50% en riesgo.</span></div>', unsafe_allow_html=True)
+
+    st.markdown("### Monitoreo de los cuatro criterios")
+    chart_df=pd.DataFrame({"Criterio":list(criteria.keys()),"Porcentaje":[int(row[f]) for f in criteria.values()]})
+    fig=px.bar(chart_df,x="Porcentaje",y="Criterio",orientation="h",range_x=[0,100],text="Porcentaje")
+    fig.update_traces(marker_color=["#16A34A" if v>=80 else "#F59E0B" if v>=50 else "#DC2626" for v in chart_df["Porcentaje"]])
+    fig.update_layout(height=300,margin=dict(l=0,r=0,t=10,b=0),xaxis_title="Preparación (%)",yaxis_title="")
+    st.plotly_chart(fig,use_container_width=True)
+
+    st.markdown("### Sesión de asesoramiento")
+    st.caption("En una implementación real, estos indicadores se registrarían durante las sesiones con la enfermera encargada de la transición.")
+    st.text_area("Observaciones y acuerdos de la sesión", placeholder="Registrar avances, dificultades y acciones acordadas...", key="m1_notes")
+    st.button("Guardar evaluación de demostración", key="m1_save")
+
+    monitor=m1[["patient_id","name","age_years","readiness_score"]].copy()
+    monitor["nivel"] = np.select([monitor["readiness_score"]>=80,monitor["readiness_score"]<50],["Preparado","En riesgo"],default="En desarrollo")
+    st.markdown("### Monitoreo de pacientes")
+    st.dataframe(monitor.sort_values("readiness_score",ascending=False),use_container_width=True,hide_index=True)
+
+    st.markdown("### Indicadores ampliados")
+    a,b,c=st.columns(3)
+    with a:
+        prep=patients["preparation_level"].value_counts().reindex(["Preparado","En desarrollo","En riesgo"]).fillna(0).reset_index(); prep.columns=["Nivel","Pacientes"]
+        fig=px.bar(prep,x="Nivel",y="Pacientes",color="Nivel",color_discrete_map={"Preparado":"#16A34A","En desarrollo":"#F59E0B","En riesgo":"#DC2626"},text="Pacientes")
+        fig.update_layout(height=300,margin=dict(l=0,r=0,t=10,b=0),showlegend=False); st.plotly_chart(fig,use_container_width=True)
+    with b:
+        comp=patients["complexity"].value_counts().reindex(["Alta","Media","Baja"]).fillna(0).reset_index(); comp.columns=["Complejidad","Pacientes"]
+        fig=px.pie(comp,values="Pacientes",names="Complejidad",hole=.55,color="Complejidad",color_discrete_map={"Alta":"#DC2626","Media":"#F59E0B","Baja":"#16A34A"})
+        fig.update_layout(height=300,margin=dict(l=0,r=0,t=10,b=0)); st.plotly_chart(fig,use_container_width=True)
+    with c:
+        cap=facilities.groupby(["specialty","capacity_status"]).size().reset_index(name="Establecimientos")
+        fig=px.bar(cap,x="specialty",y="Establecimientos",color="capacity_status",barmode="stack",color_discrete_map={"Disponible":"#16A34A","Capacidad limitada":"#F59E0B","Sin capacidad reportada":"#DC2626"})
+        fig.update_layout(height=300,margin=dict(l=0,r=0,t=10,b=0),xaxis_title="Especialidad",yaxis_title="N° de establecimientos",legend_title="Estado")
+        st.plotly_chart(fig,use_container_width=True)
+
+elif page == "Módulo 2: Transferencia (18+)":
+    st.title("Módulo 2: Transferencia del paciente al servicio adulto")
+    st.caption("La transferencia es el proceso operativo de envío y recepción del paciente en el servicio adulto. Esta ficha de demostración usa únicamente datos sintéticos.")
     patient_id = st.selectbox("Seleccionar paciente", patients["patient_id"].tolist())
     row = patients.loc[patients["patient_id"]==patient_id].iloc[0]
 
@@ -245,7 +338,7 @@ elif page == "Ficha de transición":
     a,b,c,d = st.columns(4)
     with a: render_kpi("Edad", f"{int(row['age_years'])} años {int(row['age_months_total']%12)} meses", f"{row['months_to_18']:.1f} meses para 18", "#4F46E5")
     with b: render_kpi("Complejidad", row["complexity"], row["condition"], "#DC2626" if row["complexity"]=="Alta" else "#F59E0B")
-    with c: render_kpi("Readiness", f"{row['readiness_score']}%", "preparación", "#16A34A")
+    with c: render_kpi("Preparación", f"{row['readiness_score']}%", "preparación", "#16A34A")
     with d: render_kpi("Riesgo", f"{int(row['rule_score_live'])}/100", row["rule_level_live"], "#DC2626" if row["rule_level_live"]=="Alto" else "#F59E0B")
 
     st.markdown("#### Información clínica relevante para transición")
@@ -266,20 +359,19 @@ elif page == "Ficha de transición":
         st.markdown("**Última atención**")
         st.info(row["last_visit"])
 
-    st.markdown("#### Estado de transición")
+    st.markdown("#### Datos operativos de transferencia")
     steps = [
-        ("Identificación", True),
-        ("Evaluación", True),
-        ("Preparación", row["readiness_score"]>=60),
-        ("Plan", row["adult_receiver_identified"]=="Sí"),
-        ("Referencia", row["referral_sent"]=="Sí"),
-        ("Cita", row["appointment_confirmed"]=="Sí"),
-        ("Primera atención", row["appointment_confirmed"]=="Sí" and row["adult_receiver_identified"]=="Sí"),
+        ("Receptor adulto identificado", row["adult_receiver_identified"] == "Sí"),
+        ("Resumen clínico completo", row["summary_complete"] == "Sí"),
+        ("Referencia enviada", row["referral_sent"] == "Sí"),
+        ("Cita adulta confirmada", row["appointment_confirmed"] == "Sí"),
     ]
     for label, ok in steps:
-        st.write(("✅" if ok else "⬜") + " " + label)
+        color = "#16A34A" if ok else "#DC2626"
+        estado = "Completo" if ok else "Pendiente"
+        st.markdown(f'<span style="color:{color};font-weight:750">● {label}: {estado}</span>', unsafe_allow_html=True)
 
-    st.markdown("#### ¿Por qué aparece esta alerta?")
+    st.markdown("#### ¿Qué requiere gestión?")
     factors = []
     if row["adult_receiver_identified"]=="No": factors.append("No hay receptor adulto identificado.")
     if row["appointment_confirmed"]=="No": factors.append("No hay cita adulta confirmada.")
@@ -294,8 +386,8 @@ elif page == "Ficha de transición":
 # ---------------------------
 # Referral navigator
 # ---------------------------
-elif page == "Buscar derivación":
-    st.title("🔎 Navegador de derivación")
+elif page == "Buscar establecimientos":
+    st.title("Búsqueda de establecimientos")
     st.caption("Motor de compatibilidad basado en reglas de demostración y capacidad reportada.")
     c1,c2,c3 = st.columns(3)
     with c1:
@@ -347,7 +439,7 @@ elif page == "Buscar derivación":
 # Network capacity
 # ---------------------------
 elif page == "Capacidad de red":
-    st.title("🏥 Capacidad reportada de la red")
+    st.title("Capacidad reportada de la red")
     st.caption("Esta vista simula información compartida por establecimientos / DIRIS / DIRESA.")
     spec_summary = facilities.groupby(["specialty","capacity_status"]).size().reset_index(name="n")
     fig = px.bar(spec_summary, x="specialty", y="n", color="capacity_status", barmode="stack",
@@ -370,7 +462,7 @@ elif page == "Capacidad de red":
 # Learning module
 # ---------------------------
 elif page == "Autoaprendizaje":
-    st.title("🧠 Mi transición: módulo inicial")
+    st.title("Autoaprendizaje: Mi transición")
     st.caption("Microaprendizaje para jóvenes y tutores. Contenido educativo de demo; no sustituye orientación clínica.")
     target = st.radio("¿Para quién es este módulo?", ["Joven", "Tutor / cuidador"], horizontal=True)
 
@@ -399,21 +491,48 @@ elif page == "Autoaprendizaje":
         st.success(f"Resultado: {score}% · {correct}/{len(quiz_data)} respuestas correctas")
         if score >= 80:
             st.balloons()
-            st.markdown("### 🟢 Buen nivel de preparación")
+            st.markdown("###  Buen nivel de preparación")
             st.write("El módulo sugiere continuar practicando gestión de citas, comunicación y toma de decisiones.")
         elif score >= 60:
-            st.markdown("### 🟡 En desarrollo")
+            st.markdown("###  En desarrollo")
             st.write("Conviene reforzar algunas habilidades antes de la transferencia.")
         else:
-            st.markdown("### 🔴 Necesita acompañamiento")
+            st.markdown("###  Necesita acompañamiento")
             st.write("El resultado sugiere priorizar educación y acompañamiento del equipo.")
         st.caption("La puntuación es educativa y no constituye un diagnóstico ni una evaluación clínica validada.")
 
 # ---------------------------
 # Predictive model
 # ---------------------------
+elif page == "Módulo 3: Seguimiento (18-20)":
+    st.title("Módulo 3: Seguimiento del paciente en el servicio adulto")
+    st.caption("Seguimiento posterior a la transferencia, a cargo de la enfermera del centro de atención adulta.")
+    m3=patients[patients["age_years"].between(18,20)].copy()
+    c1,c2,c3=st.columns(3)
+    with c1: render_kpi("Primera cita realizada", int((m3["first_adult_appointment_done"]=="Sí").sum()), "pacientes", "#16A34A")
+    with c2: render_kpi("Interrupciones del tratamiento", int(m3["treatment_interruptions_12m"].sum()), "últimos 12 meses", "#DC2626")
+    with c3: render_kpi("Retraso promedio", f"{m3['treatment_delay_days'].mean():.1f} días", "indicador sintético", "#F59E0B")
+
+    st.markdown("### Indicadores clave")
+    a,b,c=st.columns(3)
+    with a:
+        st.markdown('<div class="patient-card"><b>Primera cita realizada</b></div>',unsafe_allow_html=True)
+        v=int((m3["first_adult_appointment_done"]=="Sí").sum()); fig=px.pie(values=[v,max(len(m3)-v,0)],names=["Realizada","Pendiente"],hole=.62); fig.update_layout(height=250,margin=dict(l=0,r=0,t=5,b=0)); st.plotly_chart(fig,use_container_width=True)
+    with b:
+        st.markdown('<div class="patient-card"><b>Interrupciones del tratamiento</b></div>',unsafe_allow_html=True)
+        counts=m3["treatment_interruptions_12m"].value_counts().sort_index().reset_index(); counts.columns=["Interrupciones","Pacientes"]; fig=px.bar(counts,x="Interrupciones",y="Pacientes",text="Pacientes"); fig.update_traces(marker_color="#DC2626"); fig.update_layout(height=250,margin=dict(l=0,r=0,t=5,b=0)); st.plotly_chart(fig,use_container_width=True)
+    with c:
+        st.markdown('<div class="patient-card"><b>Retraso en el tratamiento</b></div>',unsafe_allow_html=True)
+        fig=px.histogram(m3,x="treatment_delay_days",nbins=8); fig.update_traces(marker_color="#F59E0B"); fig.update_layout(height=250,margin=dict(l=0,r=0,t=5,b=0),xaxis_title="Días de retraso",yaxis_title="Pacientes"); st.plotly_chart(fig,use_container_width=True)
+
+    st.markdown("### Detalle de seguimiento")
+    view=m3[["patient_id","name","age_years","first_adult_appointment_done","treatment_interruptions_12m","treatment_delay_days"]].copy()
+    view.columns=["ID","Paciente","Edad","Primera cita adulta","Interrupciones tratamiento (12m)","Retraso tratamiento (días)"]
+    st.dataframe(view,use_container_width=True,hide_index=True)
+    st.info("En el modelo operativo propuesto, estos datos serían registrados y actualizados por la enfermera encargada del seguimiento en el servicio adulto. Los valores actuales son sintéticos.")
+
 elif page == "Modelo predictivo":
-    st.title("📈 Modelo predictivo — demostración técnica")
+    st.title("Modelo predictivo — demostración técnica")
     st.warning("Este modelo se entrena exclusivamente con datos sintéticos generados para la demo. No está validado clínicamente y no debe usarse para decisiones reales.")
     model, auc, train = train_demo_model()
     st.metric("AUC de validación interna (sintético)", f"{auc:.2f}")
@@ -429,7 +548,7 @@ elif page == "Modelo predictivo":
 # Data upload
 # ---------------------------
 elif page == "Carga de datos":
-    st.title("📤 Cargar registros sintéticos")
+    st.title("Cargar registros sintéticos")
     st.caption("Puedes subir Excel o CSV. El prototipo intenta mapear las columnas esperadas.")
     st.markdown("**Columnas mínimas recomendadas:** patient_id, name, age_years, months_to_18, condition, specialty_required, complexity, readiness_score, caregiver_support, no_shows_last_12m, summary_complete, adult_receiver_identified, appointment_confirmed, referral_sent")
     file = st.file_uploader("Sube `pacientes.xlsx` o `pacientes.csv`", type=["xlsx","xls","csv"])
