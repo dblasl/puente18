@@ -1,0 +1,37 @@
+﻿facility_id,facility_name,diris,specialty,adult_service,complexity_supported,reported_capacity,capacity_status,last_updated,contact_channel,distance_km_demo
+E-001,Hospital Adultos Centro,Lima Centro,Cardiología,Sí,Alta,9,Disponible,2026-08-15 09:58,Admisión,10
+E-001,Hospital Adultos Centro,Lima Centro,Endocrinología,Sí,Alta,5,Disponible,2026-08-15 09:32,Mesa de referencias,19
+E-001,Hospital Adultos Centro,Lima Centro,Genética,Sí,Media,9,Disponible,2026-08-15 09:34,Coordinación de citas,22
+E-001,Hospital Adultos Centro,Lima Centro,Medicina física y rehabilitación,Sí,Alta,3,Capacidad limitada,2026-08-15 09:28,Mesa de referencias,27
+E-001,Hospital Adultos Centro,Lima Centro,Nefrología,Sí,Alta,10,Disponible,2026-08-15 09:29,Coordinación de citas,9
+E-001,Hospital Adultos Centro,Lima Centro,Neurología,Sí,Alta,1,Capacidad limitada,2026-08-15 09:22,Admisión,18
+E-002,Hospital Adultos Sur,Lima Sur,Cardiología,Sí,Media,8,Disponible,2026-08-15 09:29,Admisión,14
+E-002,Hospital Adultos Sur,Lima Sur,Endocrinología,Sí,Media,5,Disponible,2026-08-15 09:12,Admisión,11
+E-002,Hospital Adultos Sur,Lima Sur,Genética,Sí,Alta,6,Disponible,2026-08-15 09:53,Admisión,7
+E-002,Hospital Adultos Sur,Lima Sur,Medicina física y rehabilitación,Sí,Alta,12,Disponible,2026-08-15 09:35,Mesa de referencias,5
+E-002,Hospital Adultos Sur,Lima Sur,Nefrología,Sí,Alta,4,Capacidad limitada,2026-08-15 09:40,Admisión,27
+E-002,Hospital Adultos Sur,Lima Sur,Neurología,Sí,Alta,1,Capacidad limitada,2026-08-15 09:38,Mesa de referencias,27
+E-003,Hospital Adultos Norte,Lima Norte,Cardiología,Sí,Alta,8,Disponible,2026-08-15 09:56,Coordinación de citas,24
+E-003,Hospital Adultos Norte,Lima Norte,Endocrinología,Sí,Alta,0,Sin capacidad reportada,2026-08-15 09:42,Mesa de referencias,23
+E-003,Hospital Adultos Norte,Lima Norte,Genética,Sí,Alta,9,Disponible,2026-08-15 09:39,Mesa de referencias,28
+E-003,Hospital Adultos Norte,Lima Norte,Medicina física y rehabilitación,Sí,Media,0,Sin capacidad reportada,2026-08-15 09:33,Admisión,6
+E-003,Hospital Adultos Norte,Lima Norte,Nefrología,Sí,Alta,3,Capacidad limitada,2026-08-15 09:47,Mesa de referencias,24
+E-003,Hospital Adultos Norte,Lima Norte,Neurología,Sí,Media,8,Disponible,2026-08-15 09:23,Coordinación de citas,28
+E-004,Hospital Regional Lima Este,Lima Este,Cardiología,Sí,Alta,4,Capacidad limitada,2026-08-15 09:34,Admisión,21
+E-004,Hospital Regional Lima Este,Lima Este,Endocrinología,Sí,Alta,1,Capacidad limitada,2026-08-15 09:47,Mesa de referencias,4
+E-004,Hospital Regional Lima Este,Lima Este,Genética,Sí,Alta,10,Disponible,2026-08-15 09:30,Mesa de referencias,27
+E-004,Hospital Regional Lima Este,Lima Este,Medicina física y rehabilitación,Sí,Media,11,Disponible,2026-08-15 09:32,Admisión,16
+E-004,Hospital Regional Lima Este,Lima Este,Nefrología,Sí,Alta,8,Disponible,2026-08-15 09:43,Admisión,28
+E-004,Hospital Regional Lima Este,Lima Este,Neurología,Sí,Alta,6,Disponible,2026-08-15 09:17,Mesa de referencias,23
+E-005,Hospital de Especialidades Metropolitano,Callao,Cardiología,Sí,Media,9,Disponible,2026-08-15 09:45,Admisión,20
+E-005,Hospital de Especialidades Metropolitano,Callao,Endocrinología,Sí,Alta,10,Disponible,2026-08-15 09:59,Admisión,23
+E-005,Hospital de Especialidades Metropolitano,Callao,Genética,Sí,Media,8,Disponible,2026-08-15 09:57,Coordinación de citas,19
+E-005,Hospital de Especialidades Metropolitano,Callao,Medicina física y rehabilitación,Sí,Media,12,Disponible,2026-08-15 09:47,Coordinación de citas,14
+E-005,Hospital de Especialidades Metropolitano,Callao,Nefrología,Sí,Alta,2,Capacidad limitada,2026-08-15 09:23,Admisión,14
+E-005,Hospital de Especialidades Metropolitano,Callao,Neurología,Sí,Alta,2,Capacidad limitada,2026-08-15 09:42,Admisión,20
+E-006,Instituto de Especialidades Adultas,Lima Centro,Cardiología,Sí,Alta,2,Capacidad limitada,2026-08-15 09:32,Coordinación de citas,5
+E-006,Instituto de Especialidades Adultas,Lima Centro,Endocrinología,Sí,Media,3,Capacidad limitada,2026-08-15 09:28,Admisión,18
+E-006,Instituto de Especialidades Adultas,Lima Centro,Genética,Sí,Media,5,Disponible,2026-08-15 09:25,Coordinación de citas,16
+E-006,Instituto de Especialidades Adultas,Lima Centro,Medicina física y rehabilitación,Sí,Media,5,Disponible,2026-08-15 09:57,Admisión,27
+E-006,Instituto de Especialidades Adultas,Lima Centro,Nefrología,Sí,Media,6,Disponible,2026-08-15 09:55,Admisión,25
+E-006,Instituto de Especialidades Adultas,Lima Centro,Neurología,Sí,Alta,1,Capacidad limitada,2026-08-15 09:45,Coordinación de citas,12

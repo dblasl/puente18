@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "question": "¿Cuál de estas acciones demuestra mayor autonomía en salud?",
+    "options": [
+      "Esperar siempre a que el tutor pida la cita",
+      "Poder explicar la condición de salud y participar en la gestión de una cita",
+      "Guardar todos los documentos sin leerlos",
+      "No preguntar nada durante la consulta"
+    ],
+    "answer": 1,
+    "feedback": "La autonomía implica comprender la propia salud y participar progresivamente en la gestión de la atención."
+  },
+  {
+    "id": 2,
+    "question": "Antes de una primera consulta adulta, ¿qué debería conocer idealmente el joven?",
+    "options": [
+      "Solo el nombre del hospital",
+      "Solo el nombre de su tutor",
+      "Su condición principal, medicamentos, alergias y señales de alerta",
+      "Ninguna información: el servicio adulto recibe todo"
+    ],
+    "answer": 2,
+    "feedback": "La preparación incluye conocimientos prácticos que permitan al joven comunicarse y gestionar su atención."
+  },
+  {
+    "id": 3,
+    "question": "¿Qué significa una referencia en circuito cerrado?",
+    "options": [
+      "Enviar el documento y terminar el proceso",
+      "Enviar la referencia y confirmar que el paciente fue recibido y atendido",
+      "Dejar que la familia busque cualquier hospital",
+      "Esperar a que el paciente vuelva a pediatría"
+    ],
+    "answer": 1,
+    "feedback": "La continuidad requiere confirmar receptor, cita y primera atención; una referencia enviada por sí sola no garantiza continuidad."
+  },
+  {
+    "id": 4,
+    "question": "¿Qué debería hacer un tutor durante la transición?",
+    "options": [
+      "Seguir haciendo absolutamente todas las gestiones",
+      "Desentenderse completamente",
+      "Acompañar y transferir progresivamente responsabilidades al joven",
+      "Evitar que el joven hable con el profesional"
+    ],
+    "answer": 2,
+    "feedback": "El objetivo no es eliminar al tutor, sino pasar gradualmente de 'hacer por' a 'acompañar'."
+  },
+  {
+    "id": 5,
+    "question": "¿Cuál es una buena pregunta para una primera consulta adulta?",
+    "options": [
+      "¿Puedo evitar todas las citas futuras?",
+      "¿Cuáles son mis señales de alerta y con quién debo contactarme?",
+      "¿Mi tutor puede responder todo por mí?",
+      "¿Puedo suspender cualquier medicamento?"
+    ],
+    "answer": 1,
+    "feedback": "Preguntar por señales de alerta y vías de contacto fortalece la autonomía y la seguridad."
+  },
+  {
+    "id": 6,
+    "question": "¿Qué debe verificar el sistema antes de marcar una transición como completada?",
+    "options": [
+      "Solo que se haya generado una referencia",
+      "Que exista receptor, cita, primera atención y continuidad inicial confirmada",
+      "Solo que el paciente cumpla 18 años",
+      "Solo que el tutor haya firmado un documento"
+    ],
+    "answer": 1,
+    "feedback": "La transición se considera más robusta cuando la recepción y continuidad han sido verificadas."
+  },
+  {
+    "id": 7,
+    "question": "¿Qué significa 'capacidad reportada' en esta plataforma?",
+    "options": [
+      "Garantía de atención inmediata",
+      "Información operativa comunicada por el establecimiento y fechada",
+      "Una decisión automática de la IA",
+      "Una promesa permanente del hospital"
+    ],
+    "answer": 1,
+    "feedback": "Es un dato operativo que debe llevar fecha de actualización y no sustituye la confirmación institucional."
+  },
+  {
+    "id": 8,
+    "question": "¿Qué debería hacer la plataforma ante una alerta roja?",
+    "options": [
+      "Diagnosticar al paciente",
+      "Bloquear automáticamente la referencia",
+      "Mostrar el motivo y sugerir la acción operativa correspondiente",
+      "Enviar información clínica a cualquier hospital"
+    ],
+    "answer": 2,
+    "feedback": "La plataforma apoya la decisión del equipo; no reemplaza la decisión clínica."
+  }
+]
